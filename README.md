@@ -11,14 +11,14 @@ package main
 
 import . "github.com/harukasan/ltsvlog"
 
-type Log struct{
+type L struct{
   Time time.Time
   Status int
   URL string
 }
 
 func main() {
-  Log(Log{Time: time.Now, Status: 200, URL: "https://example.com/"})
+  Log(L{Time: time.Now, Status: 200, URL: "https://example.com/"})
   // time:1970-01-01T09:00:00+09:00\tstatus:200\turl:https://example.com/
 }
 ```
