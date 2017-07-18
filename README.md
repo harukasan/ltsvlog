@@ -39,4 +39,4 @@ func main() {
 ### Copyright
 
 Copyright 2017 Shunsuke Michii. All rights reserverd.
-See [LICENSE](./LICENSE.md) file.
+See [LICENSE](./LICENSE) file.
