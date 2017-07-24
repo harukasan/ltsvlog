@@ -4,11 +4,11 @@ package ltsvlog
 
 import (
 	"bytes"
+	"encoding"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
-	"time"
 
 	ltsv "github.com/Songmu/go-ltsv"
 )
@@ -29,35 +29,38 @@ const (
 )
 
 type Logger struct {
-	buf        *bytes.Buffer
-	w          io.Writer
-	TimeFormat string
+	w io.Writer
 }
 
 func (l *Logger) Logf(fields ...Field) {
-	defer l.buf.Reset()
-	fmt.Fprintf(l.buf, format1, fields[0].Key, l.format(fields[0].Value))
+	buf := bytes.NewBuffer(nil)
+	fmt.Fprintf(buf, format1, fields[0].Key, l.format(fields[0].Value))
 	for _, f := range fields[1:] {
-		fmt.Fprintf(l.buf, format2, f.Key, l.format(f.Value))
+		fmt.Fprintf(buf, format2, f.Key, l.format(f.Value))
 	}
-	fmt.Fprintf(l.buf, delim)
-	l.buf.WriteTo(l.w)
+	fmt.Fprintf(buf, delim)
+	buf.WriteTo(l.w)
 }
 
 func (l *Logger) Log(v interface{}) {
-	defer l.buf.Reset()
-	ltsv.MarshalTo(l.buf, v)
-	fmt.Fprintf(l.buf, delim)
-	l.buf.WriteTo(l.w)
+	buf := bytes.NewBuffer(nil)
+	ltsv.MarshalTo(buf, v)
+	fmt.Fprintf(buf, delim)
+	buf.WriteTo(l.w)
 }
 
 func (l *Logger) format(v interface{}) string {
 	var s string
 	switch v := v.(type) {
-	case time.Time:
-		s = v.Format(l.TimeFormat)
 	case string:
 		s = v
+	case encoding.TextMarshaler:
+		b, err := v.MarshalText()
+		if err != nil {
+			// TODO: handling error
+			return "(failed to marshal)"
+		}
+		s = string(b)
 	default:
 		s = fmt.Sprint(v)
 	}
@@ -81,9 +84,7 @@ func (l *Logger) SetOutput(w io.Writer) {
 }
 
 var DefaultLogger = &Logger{
-	buf:        bytes.NewBuffer(nil),
-	w:          os.Stdout,
-	TimeFormat: time.RFC3339,
+	w: os.Stdout,
 }
 
 func Log(v interface{}) {

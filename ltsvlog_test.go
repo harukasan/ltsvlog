@@ -10,7 +10,7 @@ import (
 	. "github.com/harukasan/ltsvlog"
 )
 
-func TestLogf(t *testing.T) {
+func TestWrite(t *testing.T) {
 	ti := time.Unix(0, 0)
 
 	tests := []struct {
@@ -34,9 +34,11 @@ func TestLogf(t *testing.T) {
 				s := struct {
 					Text   string
 					Answer int
+					Yo     string `ltsv:"-"`
 				}{
 					Text:   "the Answer",
 					Answer: 42,
+					Yo:     "should be ignored",
 				}
 				Log(s)
 			},
