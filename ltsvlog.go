@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"sync"
 
 	ltsv "github.com/Songmu/go-ltsv"
 )
@@ -29,6 +30,7 @@ const (
 )
 
 type Logger struct {
+	m sync.Mutex
 	w io.Writer
 }
 
@@ -39,6 +41,8 @@ func (l *Logger) Logf(fields ...Field) {
 		fmt.Fprintf(buf, format2, f.Key, l.format(f.Value))
 	}
 	fmt.Fprintf(buf, delim)
+	l.m.Lock()
+	defer l.m.Unlock()
 	buf.WriteTo(l.w)
 }
 
@@ -46,6 +50,8 @@ func (l *Logger) Log(v interface{}) {
 	buf := bytes.NewBuffer(nil)
 	ltsv.MarshalTo(buf, v)
 	fmt.Fprintf(buf, delim)
+	l.m.Lock()
+	defer l.m.Unlock()
 	buf.WriteTo(l.w)
 }
 
@@ -80,6 +86,8 @@ func needQuote(s string) bool {
 }
 
 func (l *Logger) SetOutput(w io.Writer) {
+	l.m.Lock()
+	defer l.m.Unlock()
 	l.w = w
 }
 
